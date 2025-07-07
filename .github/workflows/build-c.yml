@@ -1,0 +1,49 @@
+# .github/workflows/build-c.yml
+#
+# CI pipeline: build (and optionally test) your C project on every push or PR.
+
+name: Build C Program
+
+# ────────────────────────────────
+# 1. Triggers
+# ────────────────────────────────
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  # Manual run from the Actions tab
+  workflow_dispatch:
+
+# ────────────────────────────────
+# 2. Jobs
+# ────────────────────────────────
+jobs:
+  build:
+    runs-on: ubuntu-latest    # ⟵ line 20 in the old file - indentation now correct
+
+    steps:
+      # (1) Check out your repo at $GITHUB_WORKSPACE
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      # (2) Install GNU tool-chain for C
+      - name: Install build essentials
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+
+      # (3) Compile … adjust file list as you add modules
+      - name: Compile
+        run: |
+          gcc -Wall -Wextra -pedantic -std=c17 \
+              -o Automated_CSV_Data_Analysis \
+              main.c \
+              CommonDefinitions.c GeneralUtilities.c StringUtilities.c \
+              FileUtilities.c DataExtraction.c Integrators.c \
+              StatisticalMethods.c DataSetModeling.c DataAnalysis.c \
+              DebuggingUtilities.c
+
+      # (4) Run executable / tests (optional)
+      - name: Run program (basic smoke-test)
+        run: ./Automated_CSV_Data_Analysis
