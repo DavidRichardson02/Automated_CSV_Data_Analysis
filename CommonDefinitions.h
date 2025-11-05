@@ -35,8 +35,8 @@
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0])) // Macro to compute the number of elements in a statically-allocated array.
 
 
-static const size_t MAX_STRING_SIZE = 1000; // Maximum string size.
-static const size_t MAX_NUM_FILE_LINES = 100000; // Maximum number of lines in a file.
+static const size_t MAX_STRING_SIZE = 8192; // Maximum string size.
+static const size_t MAX_NUM_FILE_LINES = 1048576; // Maximum number of lines in a file. == 2^20
 
 /// \}
 
