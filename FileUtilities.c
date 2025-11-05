@@ -71,6 +71,18 @@ char *identify_file_extension(const char* filePathName) //Only works for String-
 }
 
 
+int pathname_has_extension(const char* filePathName)
+{
+	if(count_character_occurrences(filePathName, '.') == 0) // If this pathname does not have a file extension(ex: a directory pathname)
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
 /**
  * find_file_directory_path
  *
@@ -795,6 +807,79 @@ void write_file_numeric_data(const char *filename, double *data, int countDataEn
 	
 	
 	fclose(file);
+}
+
+
+
+/**
+ * load_data_from_file_as_double
+ *
+ * Load a column of numeric values from a text file into a freshly allocated
+ * double array, skipping the first line (assumed to be a header). Blank or
+ * whitespace-only lines are ignored. Lines that do not begin with a valid
+ * numeric token are also ignored.
+ *
+ * @param filePathName A string representing the name of the file to write to.
+ * @param outCount An integer pointer to store the number of data entries loaded.
+ * @return double* A pointer to an array of double values loaded from the file.
+ */
+double* load_data_from_file_as_double(const char *filePathName, int *outCount)
+{
+	if (outCount) *outCount = 0;
+	
+	int lineCount = count_file_lines(filePathName, MAX_NUM_FILE_LINES);
+	char **fileContents = read_file_contents(filePathName, lineCount);
+	if (!fileContents || lineCount <= 0) {
+		return NULL;
+	}
+	
+	/* Assume first line is a header (e.g., "mass"); start reading at line 1. */
+	const int startIdx = 1;
+	
+	/* -------- Pass 1: count valid numeric rows (skip blanks/whitespace) -------- */
+	int m = 0;
+	for (int i = startIdx; i < lineCount; ++i) {
+		const char *s = fileContents[i];
+		if (!s) continue;
+		
+		/* Trim leading spaces/tabs only (keeps behavior consistent with prior code). */
+		while (*s == ' ' || *s == '\t') ++s;
+		if (*s == '\0') continue; /* blank line */
+		
+		/* Check if a numeric token exists at the start of the (trimmed) line. */
+		char *endptr = NULL;
+		(void)strtod(s, &endptr);
+		if (endptr == s) continue; /* no numeric conversion at line start */
+		
+		++m;
+	}
+	
+	if (m <= 0) {
+		deallocate_memory_char_ptr_ptr(fileContents, lineCount);
+		return NULL;
+	}
+	
+	/* -------- Pass 2: allocate and parse -------- */
+	double *data = allocate_memory_double_ptr(m);
+	int k = 0;
+	
+	for (int i = startIdx; i < lineCount; ++i) {
+		char *s = fileContents[i];
+		if (!s) continue;
+		
+		while (*s == ' ' || *s == '\t') ++s;
+		if (*s == '\0') continue;
+		
+		char *endptr = NULL;
+		double v = strtod(s, &endptr);
+		if (endptr == s) continue; /* not numeric at the start */
+		
+		data[k++] = v;
+	}
+	
+	if (outCount) *outCount = k;
+	deallocate_memory_char_ptr_ptr(fileContents, lineCount);
+	return data;
 }
 
 
