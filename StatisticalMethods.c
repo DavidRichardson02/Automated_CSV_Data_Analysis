@@ -54,7 +54,7 @@ double compute_mean(double* data, int n)
 	{
 		sum += data[i];
 	}
-	return sum / n;
+	return sum / (double)n;
 }
 
 
@@ -77,7 +77,7 @@ double compute_standard_deviation(double* data, int n, double mean)
 	{
 		variance += (data[i] - mean) * (data[i] - mean);
 	}
-	variance/=n;
+	variance /= (double)n;
 	return sqrt(variance);
 }
 
@@ -192,8 +192,6 @@ double* gaussian_riemann_sum_integration(int n, double *x, double *f)
 	
 	return F;
 }
-
-
 
 
 
@@ -593,7 +591,9 @@ Histogram compute_data_set_binning(double *data, int n)
 	
 	
 	// Calculating the Interquartile Range (IQR).
-	double iqr = compute_IQR(data, n);
+	//double iqr = compute_IQR(data, n);
+	double iqr = compute_IQR_robust(data, n);
+	
 	
 	// Calculate bin width using the Freedman-Diaconis rule, which reduces the effect of outliers
 	double binWidth = 2.0 * iqr / pow((double)(n), 1.0 / 3.0);
@@ -944,27 +944,6 @@ void print_histogram(Histogram histogram, char *label)
 
 
 
-double* load_data_from_file_as_double(const char *filePathName, int *outCount)
-{
-	int lineCount = count_file_lines(filePathName, MAX_NUM_FILE_LINES);
-	char **fileContents = read_file_contents(filePathName, lineCount);
-	
-	// First line expected to be the field name, subsequent lines numeric data
-	// If first line is header (e.g., "mass"), skip it:
-	int startIdx = 1;
-	int dataCount = lineCount - startIdx;
-	double *data = allocate_memory_double_ptr(dataCount);
-	
-	for (int i = startIdx; i < lineCount; i++)
-	{
-		data[i - startIdx] = atof(fileContents[i]);
-	}
-	
-	*outCount = dataCount;
-	deallocate_memory_char_ptr_ptr(fileContents, lineCount);
-	return data;
-}
-
 
 StatisticalReport analyze_plottable_data_file(const char *filePathName)
 {
@@ -1070,3 +1049,58 @@ StatisticalReport analyze_numeric_data(double *data, int n, const char *outputDi
 
 
 
+static int cmp_double(const void* a, const void* b) {
+	double da = *(const double*)a, db = *(const double*)b;
+	return (da<db) ? -1 : (da>db) ? 1 : 0;
+}
+
+// Copy & sort, then linear interpolation between neighbors.
+double quantile_copy(const double* x, int n, double p) {
+	if (n <= 0) return NAN;
+	if (p <= 0) return x[0];
+	if (p >= 1) return x[n-1];
+	
+	double* w = (double*)malloc((size_t)n*sizeof(double));
+	if (!w) return NAN;
+	memcpy(w, x, (size_t)n*sizeof(double));
+	// Use your radix_sort_doubles if it’s guaranteed; otherwise qsort:
+#ifdef HAVE_RADIX_SORT_DOUBLES
+	radix_sort_doubles(w, n);
+#else
+	qsort(w, n, sizeof(double), cmp_double);
+#endif
+	
+	double idx = p * (n - 1);
+	int lo = (int)floor(idx);
+	int hi = (int)ceil(idx);
+	double frac = idx - lo;
+	
+	double q = (hi==lo) ? w[lo] : (1.0 - frac)*w[lo] + frac*w[hi];
+	free(w);
+	return q;
+}
+
+double compute_IQR_robust(const double* data, int n) {
+	if (n < 2) return 0.0;
+	double q25 = quantile_copy(data, n, 0.25);
+	double q75 = quantile_copy(data, n, 0.75);
+	double iqr = q75 - q25;
+	if (iqr <= 0.0) {
+		// Handle heavy ties: fallback to MAD to avoid zero bin width
+		// MAD scaled to IQR-equivalent (~1.4826)
+		double* w = (double*)malloc((size_t)n*sizeof(double));
+		memcpy(w, data, (size_t)n*sizeof(double));
+#ifdef HAVE_RADIX_SORT_DOUBLES
+		radix_sort_doubles(w, n);
+#else
+		qsort(w, n, sizeof(double), cmp_double);
+#endif
+		double med = quantile_copy(w, n, 0.5);
+		for (int i=0;i<n;i++) w[i] = fabs(w[i]-med);
+		double mad = quantile_copy(w, n, 0.5);
+		free(w);
+		if (mad > 0) iqr = 2.0 * (1.4826 * mad); // approximate spread
+		else         iqr = 1.0; // last-resort guard
+	}
+	return iqr;
+}
