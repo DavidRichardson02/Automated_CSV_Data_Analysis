@@ -53,8 +53,6 @@ typedef struct
 	char **dataSetFileContents;
 } DataSetProperties;
 DataSetProperties analyze_data_set_properties(const char *filePathName); // Function to analyze the properties of a data set for processing and analysis
-DataSetProperties capture_data_set_configurations(const char *filePathName, char **formattedContents, int lineCount, int fieldCount, const char *delimiter);
-
 
 
 /**
@@ -98,30 +96,21 @@ typedef struct
 	double **radixSortedData;
 	
 	
-	
 	DirectoryProperties plottableDataDirectory;
 	DirectoryProperties analysisDataDirectory;
 } DataSetAnalysis;
+
+
+
+
+
+
 DataSetAnalysis configure_data_set_analysis(DataSetProperties dataSetProperties, const char *preprocessedDataDirectory); // Function to configure the analysis of a data set for processing and operations
-
-
-
-
-
-char **extract_and_format_data_set(char **fileContents, int lineCount, int fieldCount, const char *delimiter);
-DataSetAnalysis process_data_set_for_analysis(const char* dataSetFilePathName);
-const char *preprocess_data_set_for_analysis(const char* dataSetFilePathName);
-
-
-DataSetAnalysis analyze_preprocessed_data_set(DataSetAnalysis );
-
-
-char **blindly_extract_data_set(const char* dataSetFilePathName, int lineCount);
-
-//const char *perform_statistical_analysis(const char *preprocessedDataDirectoryPath);
-//const char *perform_statistical_analysis_on_plottable_data(const char *plottableDataDirectory);
-//const char *analyze_plottable_data_fields(const char *preparedDataDirectoryPathname);
-const char *perform_full_analysis_and_modeling(const char *preprocessedDataDirectoryPath);
+char **blindly_extract_data_set(const char* dataSetFilePathName, int lineCount); // Function to extract the entire contents of a data set without any formatting or processing
+char **extract_and_format_data_set(char **fileContents, int lineCount, int fieldCount, const char *delimiter); // Function to extract and format the contents of a data set for processing and analysis
+DataSetAnalysis process_data_set_for_analysis(const char* dataSetFilePathName); // Function to process a data set for analysis, including extraction, formatting, and preparation for statistical operations
+DataSetAnalysis analyze_preprocessed_data_set(DataSetAnalysis ); // Function to analyze a preprocessed data set for further operations and statistical analysis
+const char *perform_full_analysis_and_modeling(const char *preprocessedDataDirectoryPath); // Function to perform full analysis and modeling on the preprocessed data set, generating results and output directories
 
 
 
