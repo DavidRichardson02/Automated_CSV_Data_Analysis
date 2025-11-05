@@ -17,47 +17,40 @@
 
 
 
-void gaussian_erf_plot(const char* filePathName);
+
+
+
+
+/* ========================================================================
+ * Unified MATLAB-Script Generation
+ * ===================================================================== */
+typedef enum MatlabScriptFlavor {
+	MATLAB_SCRIPTS_INDIVIDUAL      = 1,  // one <field>_plot.m per field
+	MATLAB_SCRIPTS_COMPREHENSIVE   = 2,  // one comprehensive_plots.m
+	MATLAB_SCRIPTS_BOTH            = 3   // both of the above
+} MatlabScriptFlavor;
+
+/**
+ * generate_matlab_scripts_unified
+ * analysisDir : directory where *_histogram.txt and *_stats/_analysis files live
+ * fieldNames  : array of field-name strings (length = numFields)
+ * numFields   : number of fields
+ * flavor      : INDIVIDUAL / COMPREHENSIVE / BOTH
+ * scriptsSubdir (optional): if non-NULL/non-empty, scripts go to analysisDir/<scriptsSubdir>/ ;
+ *                           otherwise they go directly in analysisDir.
+ */
+void generate_matlab_scripts_unified(const char *analysisDir, char **fieldNames, int numFields, MatlabScriptFlavor flavor, const char *scriptsSubdir);
+
+
+
+
 // ------------- Helper Functions for Creating MATLAB(.m) Scripts/Files to Plot Some Model(various statistical models of a file's(.csv) data set, including but not limited to: histogram, theoretical distribution, standard normal distribution, etc.) of Data -------------
 /// \{
-
-void generate_individual_matlab_scripts(const char *resultsDir, char **fieldNames, int numFields);
-void generate_comprehensive_matlab_script(const char *analysisDir, char **fieldNames, int numFields);
-
+void generate_matlab_model_scripts_unified(const char *analysisDir, char **fieldNames, int numFields, int overwrite);
 /// \}
 
 
 
-
-
-
-
-
-void gaussian_error_function_plot(const char* filePathName);
-void generate_fieldwise_modeling_scripts(const char *analysisDir, char **fieldNames, int numFields);
-void generate_comprehensive_modeling_script(const char *analysisDir, char **fieldNames, int numFields);
-
-
-
-
-
-
-
-
-
-void generate_modeling_matlab_scripts(const char *modelingDir, char **fieldNames, int numFields);
-void generate_modeling_matlab_script_all_fields(const char *modelingDir, char **fieldNames, int numFields);
-/**
- // Suppose 'resultsDirectory' is your top-level results from analysis
- char *modelingDir = combine_strings(resultsDirectory, "/Modeling");
- create_directory(modelingDir, "");
- 
- // We assume you have a list of field names & the number of fields:
- generate_modeling_matlab_scripts(modelingDir, fieldNames, numFields);
- generate_modeling_matlab_script_all_fields(modelingDir, fieldNames, numFields);
- 
- free(modelingDir);
- */
 
 
 
