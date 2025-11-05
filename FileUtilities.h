@@ -26,7 +26,7 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
-
+#include <curl/curl.h>
 
 
 
@@ -34,6 +34,7 @@
 /// \{
 int determine_file_depth(const char* filePathName); // Determines the depth (nested level) of a file in the file system
 char* identify_file_extension(const char* filePathName); // Identifies the file extension from a file path
+int pathname_has_extension(const char* filePathName); // Checks if a pathname has a file extension
 char* find_file_directory_path(const char* filePathName); // Finds the directory path from a full file path
 char *find_directory_name_from_path(const char* directoryPathName); // Extracts the directory name from a directory path(taken from filepath using 'find_file_directory_path')
 char* find_name_from_path(const char* filePathName); // Extracts the file name from a file path
@@ -61,6 +62,7 @@ char** read_file_contents(const char* filePathName, int lineCount); // Blindly r
 char** parse_file_contents(const char* filePathName, int lineCount); // Conditionally reads the contents of a file into a string array
 void write_file_contents(const char *filename, char **fileContents); // Writes content to a file from a char array
 void write_file_numeric_data(const char *filename, double *data, int countDataEntries, const char *dataFieldName); // Writes data to a file from a double array
+double* load_data_from_file_as_double(const char *filePathName, int *outCount); // Loads numeric data from a file into a double array
 char* generate_merged_filename(const char* filePath1, const char* filePath2);
 char* merge_two_files(const char* filePath1, const char* filePath2);
 /// \}
