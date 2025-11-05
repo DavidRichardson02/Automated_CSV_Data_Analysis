@@ -115,8 +115,7 @@ double compute_skewness_from_file(const char *filePathName);
 double anderson_darling_normality_test_from_file(const char *filePathName);
 Histogram compute_histogram_from_file(const char *filePathName, int numBins);
 
-// A convenience function to load data from a file into a double array.
-double* load_data_from_file_as_double(const char *filePathName, int *outCount);
+
 
 
 
@@ -139,6 +138,16 @@ StatisticalReport analyze_numeric_data(double *data, int n, const char *outputDi
 
 
 
+
+
+
+
+
+
+
+
+double quantile_copy(const double* x, int n, double p); // copies & sorts internally
+double compute_IQR_robust(const double* x, int n);
 
 
 
